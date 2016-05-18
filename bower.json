@@ -2,7 +2,7 @@
   "name": "palladio-timespan-component",
   "description": "Timespan component for Palladio",
   "main": [
-    "dist/palladio-timespan-component.min.js",
+    "dist/palladio-timespan-component.js",
     "dist/palladio-timespan-component.css"
   ],
   "authors": [
@@ -13,6 +13,9 @@
     "palladio",
     "visualization"
   ],
+  "dependencies": {
+    "palladio": ">=1.2.0-beta.10"
+  },
   "moduleType": [],
   "homepage": "http://hdlab.stanford.edu/palladio/",
   "ignore": [
