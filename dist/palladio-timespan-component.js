@@ -147,7 +147,7 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 
 					var sel, svg, dim, group, x, y, xStart, xEnd, emitFilterText, removeFilterText,
 						topBrush, midBrush, bottomBrush, top, bottom, middle, filter, yStep, tooltip,
-						xAxisStart, xAxisEnd, pathData;
+						xAxisStart, xAxisEnd, pathData, firstOrOther, secondOrOther;
 
 					var strokeWidth = 0.8;
 					var highlightStrokeWidth = 1.5;
@@ -156,7 +156,7 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 
 					var highlightIn = function(d) {
 						svg.select('g').selectAll('.path')
-								.filter(function(p) { return p.key.slice(0,3).join() === d.key.slice(0,3).join(); })
+								.filter(function(p) {return p.key.slice(0,3).join() === d.key.slice(0,3).join(); })
 								.selectAll("*")
 							.attr('stroke', '#222222')
 							// .attr('r', highlightR)
@@ -220,13 +220,13 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 									} else {
 										// Otherwise set the blank one equal to the populated one.
 										if(format.reformatExternal(d[scope.dateStartDim.key]) === '') {
-											return [ format.reformatExternal(d[scope.dateEndDim.key]),
+											return [ undefined,
 													format.reformatExternal(d[scope.dateEndDim.key]),
 													d[scope.tooltipLabelDim.key],
 													d[scope.groupDim.key] ];
 										} else {
 											return [ format.reformatExternal(d[scope.dateStartDim.key]),
-													format.reformatExternal(d[scope.dateStartDim.key]),
+													undefined,
 													d[scope.tooltipLabelDim.key],
 													d[scope.groupDim.key] ];
 										}
@@ -249,14 +249,22 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 							var bottomExtent = [];
 							var midExtent = [];
 
+							firstOrOther = function(d) {
+								return d[0] ? format.parse(d[0]) : format.parse(d[1])
+							}
+
+							secondOrOther = function(d) {
+								return d[1] ? format.parse(d[1]) : format.parse(d[0])
+							}
+
 							filter = function(d) {
 								return (topExtent.length === 0 ||
-										(topExtent[0] <= format.parse(d[1]) && format.parse(d[1]) <= topExtent[1])) &&
+										(d[1] && topExtent[0] <= format.parse(d[1]) && format.parse(d[1]) <= topExtent[1])) &&
 									(bottomExtent.length === 0 ||
-										(bottomExtent[0] <= format.parse(d[0]) && format.parse(d[0]) <= bottomExtent[1])) &&
+										(d[0] && bottomExtent[0] <= format.parse(d[0]) && format.parse(d[0]) <= bottomExtent[1])) &&
 									(midExtent.length === 0 ||
-										(!(midExtent[0] > format.parse(d[0]) && midExtent[0] > format.parse(d[1])) &&
-											!(midExtent[1] < format.parse(d[0]) && midExtent[1] < format.parse(d[1]))));
+										(!(midExtent[0] > firstOrOther(d) && midExtent[0] > secondOrOther(d)) &&
+											!(midExtent[1] < firstOrOther(d) && midExtent[1] < secondOrOther(d))));
 							};
 
 							emitFilterText = function() {
@@ -488,7 +496,7 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 										.attr('fill-opacity', 0.8)
 										.attr('stroke-opacity', 0.8)
 										.attr('stroke-width', strokeWidth)
-										.style("display", "none")
+										.style("display", function(d) { return d.key[0] ? "inline" : "none"; })
 										.on('mouseover', highlightIn)
 										.on('mouseout', highlightOut);
 
@@ -499,7 +507,7 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 										.attr('fill-opacity', 0.8)
 										.attr('stroke-opacity', 0.8)
 										.attr('stroke-width', strokeWidth)
-										.style("display", "none")
+										.style("display", function(d) { return d.key[1] ? "inline" : "none"; })
 										.on('mouseover', highlightIn)
 										.on('mouseout', highlightOut);
 
@@ -507,6 +515,7 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 									.append('line')
 										.attr('stroke-width', 1)
 										.attr('stroke-opacity', strokeWidth)
+										.style("display", function(d) { return d.key[0] && d.key[1] ? "inline" : "none"; })
 										.on('mouseover', highlightIn)
 										.on('mouseout', highlightOut);
 
@@ -515,24 +524,24 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 							var startCircles = paths.selectAll('.path-start');
 							var endCircles = paths.selectAll('.path-end');
 
+							// Calculate fille based on selection.
+							lines.attr('stroke', fill);
+							circles.attr('stroke', fill);
+							circles.attr('fill', fill);
+
 							if(scope.stepMode === "Bars" || scope.stepMode === 'Grouped Bars') {
 								// We need to refigure the yStep scale since the number of groups can change.
 								yStep.domain([-1, pathData.length]);
 
-								// Calculate fille based on selection.
-								lines.attr('stroke', fill);
-								circles.attr('stroke', fill);
-								circles.attr('fill', fill);
-
 								lines
 									.transition()
-										.attr('x1', function (d) { return x(format.parse(d.key[0])); } )
+										.attr('x1', function (d) { return x(firstOrOther(d.key)); } )
 										.attr('y1', 0)
-										.attr('x2', function (d) { return x(format.parse(d.key[1])); })
+										.attr('x2', function (d) { return x(secondOrOther(d.key)); })
 										.attr('y2', 0);
 
-								startCircles.attr('cx', function (d) { return x(format.parse(d.key[0])); });
-								endCircles.attr('cx', function (d) { return x(format.parse(d.key[1])); });
+								startCircles.attr('cx', function (d) { return x(firstOrOther(d.key)); });
+								endCircles.attr('cx', function (d) { return x(secondOrOther(d.key)); });
 
 								// Translate the paths to their proper height.
 								paths
@@ -540,17 +549,15 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 										.attr("transform", function (d, i) { return "translate(0," + yStep(i) + ")"; });
 
 								// Show the circles.
-								circles.style("display", "inline");
+								startCircles.attr("transform", "translate(0,0)")
 							} else {
-								// Hide the circles.
-								circles.style("display", "none");
+								startCircles.attr("transform", "translate(0," + y(0) + ")")
 
-								lines.attr('stroke', fill);
 								lines
 									.transition()
-										.attr('x1', function (d) { return x(format.parse(d.key[0])); })
+										.attr('x1', function (d) { return x(firstOrOther(d.key)); })
 										.attr('y1', y(0))
-										.attr('x2', function (d) { return x(format.parse(d.key[1])); })
+										.attr('x2', function (d) { return x(secondOrOther(d.key)); })
 										.attr('y2', y(1));
 
 								// All parallel bars start at 0.
