@@ -118,22 +118,22 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 					if(scope.functions) {
 						scope.functions["startDimension"] = function(dim) {
 							scope.$apply(function(s) {
-								s.dateStartDim = s.dateDims.filter(function(f) { return f.key === dim.key; })[0];
+								if(dim) s.dateStartDim = s.dateDims.filter(function(f) { return f.key === dim.key; })[0];
 							});
 						};
 						scope.functions["endDimension"] = function(dim) {
 							scope.$apply(function(s) {
-								s.dateEndDim = s.dateDims.filter(function(f) { return f.key === dim.key; })[0];
+								if(dim) s.dateEndDim = s.dateDims.filter(function(f) { return f.key === dim.key; })[0];
 							});
 						};
 						scope.functions["tooltipDimension"] = function(dim) {
 							scope.$apply(function(s) {
-								s.tooltipLabelDim = s.labelDims.filter(function(f) { return f.key === dim.key; })[0];
+								if(dim) s.tooltipLabelDim = s.labelDims.filter(function(f) { return f.key === dim.key; })[0];
 							});
 						};
 						scope.functions["groupDimension"] = function(dim) {
 							scope.$apply(function(s) {
-								s.groupDim = s.labelDims.filter(function(f) { return f.key === dim.key; })[0];
+								if(dim) s.groupDim = s.labelDims.filter(function(f) { return f.key === dim.key; })[0];
 							});
 						};
 					}
@@ -172,6 +172,12 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 					};
 
 					var format = dateService.format;
+
+					if(scope.functions) {
+						scope.functions['getSettings'] = function() {
+							return element.find('.timespan-settings')[0];
+						}
+					}
 
 					// ng-class is not compiled before directive post-compile function (really!)
 					// So we apply width classes manually...
