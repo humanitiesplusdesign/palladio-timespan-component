@@ -177,6 +177,13 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 						scope.functions['getSettings'] = function() {
 							return element.find('.timespan-settings')[0];
 						}
+						scope.functions['importState'] = function(state) {
+							importState(state)
+							return true
+						}
+						scope.functions['exportState'] = function() {
+							return exportState()
+						}
 					}
 
 					// ng-class is not compiled before directive post-compile function (really!)
