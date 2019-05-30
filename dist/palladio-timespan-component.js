@@ -86,7 +86,12 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 					// Label dimensions.
 					scope.labelDims = scope.metadata;
 					scope.tooltipLabelDim = scope.labelDims[0];
+
+					// Group dimension
 					scope.groupDim = scope.labelDims[0];
+
+					// Sorting dimension
+					scope.sortDim = scope.dateStartDim;
 
 					scope.title = "Time Span Filter";
 
@@ -134,6 +139,11 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 						scope.functions["groupDimension"] = function(dim) {
 							scope.$apply(function(s) {
 								if(dim) s.groupDim = s.labelDims.filter(function(f) { return f.key === dim.key; })[0];
+							});
+						};
+						scope.functions["sortDimension"] = function(dim) {
+							scope.$apply(function(s) {
+								if(dim) s.sortDim = s.metadata.filter(function(f) { return f.key === dim.key; })[0];
 							});
 						};
 					}
@@ -218,7 +228,7 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 
 							if(dim) dim.remove();
 
-							// Dimension has structure [startDate, endDate, label, group]
+							// Dimension has structure [startDate, endDate, label, group, sort]
 							dim = scope.xfilter.dimension(
 								function(d) {
 									if((format.reformatExternal(d[scope.dateStartDim.key]) !== '' &&
@@ -229,19 +239,22 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 											return [ format.reformatExternal(d[scope.dateStartDim.key]),
 													format.reformatExternal(d[scope.dateEndDim.key]),
 													d[scope.tooltipLabelDim.key],
-													d[scope.groupDim.key] ];
+													d[scope.groupDim.key],
+													d[scope.sortDim.key] ];
 									} else {
 										// Otherwise set the blank one equal to the populated one.
 										if(format.reformatExternal(d[scope.dateStartDim.key]) === '') {
 											return [ undefined,
 													format.reformatExternal(d[scope.dateEndDim.key]),
 													d[scope.tooltipLabelDim.key],
-													d[scope.groupDim.key] ];
+													d[scope.groupDim.key],
+													d[scope.sortDim.key] ];
 										} else {
 											return [ format.reformatExternal(d[scope.dateStartDim.key]),
 													undefined,
 													d[scope.tooltipLabelDim.key],
-													d[scope.groupDim.key] ];
+													d[scope.groupDim.key],
+													d[scope.sortDim.key] ];
 										}
 									}
 								}
@@ -462,7 +475,8 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 								return (d.key[0] !== "" || d.key[1] !== "") && d.value !== 0;
 							}).sort(function (a, b) {
 								if(scope.stepMode !== 'Grouped Bars' || a.key[3] === b.key[3]) {
-									return a.key[0] < b.key[0] ? -1 : 1;
+									// Use the sort dimension (default to the start date)
+									return a.key[4] < b.key[4] ? -1 : 1;
 								} else {
 									return a.key[3] < b.key[3] ? -1 : 1;
 								}
@@ -598,7 +612,7 @@ angular.module('palladioTimespanComponent', ['palladio', 'palladio.services'])
 						update();
 					};
 
-					scope.$watchGroup(['dateStartDim', 'dateEndDim', 'tooltipLabelDim', 'groupDim'], function () {
+					scope.$watchGroup(['dateStartDim', 'dateEndDim', 'tooltipLabelDim', 'groupDim', 'sortDim'], function () {
 						reset();
 						setup();
 						update();
