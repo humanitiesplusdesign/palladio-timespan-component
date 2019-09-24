@@ -1,4 +1,14 @@
 {
+  "name": "palladio-timespan-component",
+  "main": "dist/palladio-timespan-component.js",
+  "version": "1.2.0",
+  "description": "Timespan component for the Palladio framework.",
+  "homepage": "http://hdlab.stanford.edu/palladio",
+  "repository": "https://github.com/humanitiesplusdesign/palladio-timespan-component",
+  "scripts": {
+    "build": "gulp scripts css",
+    "develop": "gulp"
+  },
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-angular-templates": "0.0.2",
